@@ -21,16 +21,16 @@ int main(void) {
 
     if (!client.Execute("insert into abc_007 values (1), (2), (3), (4), (5)", &errmsg)) {
         cerr << "insert data failed: " << errmsg << endl;
-        return -1;
+    } else {
+        cout << "insert test data ok" << endl;
     }
-
-    cout << "insert test data ok" << endl;
 
     bool ok = client.Execute("select * from abc_007", &errmsg);
     if (!ok)  {
         cerr << "query table failed: " << errmsg << endl;
+    } else {
+        cout << "query table ok" << endl;
     }
-    cout << "ssssssssssssss1" << endl;
 
     ok = client.Execute("select * from abc_007", &errmsg, [] (const SqlResult* res) {
         string errmsg;
@@ -46,10 +46,10 @@ int main(void) {
         }
     });
     if (!ok)  {
-        cerr << "query table failed: " << errmsg << endl;
+        cerr << "query table with result failed: " << errmsg << endl;
+    } else {
+        cout << "query table with result ok" << endl;
     }
-
-    cout << "ssssssssssssss2" << endl;
 
     return 0;
 }

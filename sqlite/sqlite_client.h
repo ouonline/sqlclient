@@ -1,3 +1,6 @@
+#ifndef __SQLITE_SQLITE_CLIENT_H__
+#define __SQLITE_SQLITE_CLIENT_H__
+
 #include "../sqlclient.h"
 #include "sqlite3/sqlite3.h"
 
@@ -15,9 +18,15 @@ public:
 private:
     sqlite3* m_db;
 
+public:
+    SqliteClient(SqliteClient&&) = default;
+    SqliteClient& operator=(SqliteClient&&) = default;
+
 private:
-    SqliteClient(const SqliteClient&);
-    SqliteClient& operator=(const SqliteClient&);
+    SqliteClient(const SqliteClient&) = delete;
+    SqliteClient& operator=(const SqliteClient&) = delete;
 };
 
 }
+
+#endif

@@ -7,7 +7,6 @@ namespace outils {
 class SqliteRow final : public SqlRow {
 public:
     SqliteRow(sqlite3_stmt* stmt) : m_stmt(stmt) {}
-    virtual ~SqliteRow() {}
     void Get(uint32_t col, int32_t* res) const override {
         *res = sqlite3_column_int(m_stmt, col);
     }
@@ -64,7 +63,9 @@ public:
         : m_db(db), m_stmt(stmt), m_meta(stmt) {}
 
     ~SqliteResult() {
-        sqlite3_finalize(m_stmt);
+        if (m_stmt) {
+            sqlite3_finalize(m_stmt);
+        }
     }
 
     const SqlColumnMeta* GetColumnMeta() const override {
@@ -140,12 +141,11 @@ bool SqliteClient::Execute(const string& sqlstr, string* errmsg,
     sqlite3_stmt* stmt = nullptr;
     int rc = sqlite3_prepare_v2(m_db, sqlstr.data(), sqlstr.size(),
                                 &stmt, nullptr);
+    const SqliteResult res(m_db, stmt);
+
     if (rc != SQLITE_OK) {
         if (errmsg) {
             *errmsg = sqlite3_errmsg(m_db);
-        }
-        if (stmt) {
-            sqlite3_finalize(stmt);
         }
         return false;
     }
@@ -163,9 +163,9 @@ bool SqliteClient::Execute(const string& sqlstr, string* errmsg,
     }
 
     if (cb) {
-        const SqliteResult res(m_db, stmt);
         cb(&res);
     }
+
     return true;
 }
 
