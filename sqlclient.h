@@ -1,5 +1,5 @@
-#ifndef __UTILS_SQLCLIENT_H__
-#define __UTILS_SQLCLIENT_H__
+#ifndef __SQLCLIENT_SQLCLIENT_H__
+#define __SQLCLIENT_SQLCLIENT_H__
 
 #include <string>
 #include <functional>
