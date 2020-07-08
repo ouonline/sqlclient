@@ -36,12 +36,12 @@ int main(void) {
     ok = client.Execute("select * from abc_007", &errmsg, [] (const SqlResult* res) {
         string errmsg;
         auto meta = res->GetColumnMeta();
-        bool ok = res->ForEachRow([&meta] (const SqlRow* row) -> bool {
+        bool ok = res->ForEachRow(&errmsg, [&meta] (const SqlRow* row) -> bool {
             uint64_t id;
             row->Get(0, &id);
             cout << "get [" << meta->GetColumnName(0) << "] -> " << id << endl;
             return true;
-        }, &errmsg);
+        });
         if (!ok) {
             cerr << "visit result failed: " << errmsg << endl;
         }

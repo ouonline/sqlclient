@@ -38,8 +38,8 @@ class SqlResult {
 public:
     virtual ~SqlResult() {}
     virtual const SqlColumnMeta* GetColumnMeta() const = 0;
-    virtual bool ForEachRow(const std::function<bool (const SqlRow*)>& cb,
-                            std::string* errmsg = nullptr) const = 0;
+    virtual bool ForEachRow(std::string* errmsg,
+                            const std::function<bool (const SqlRow*)>& cb) const = 0;
 };
 
 class SqlClient {

@@ -64,7 +64,7 @@ public:
         return &m_meta;
     }
 
-    bool ForEachRow(const function<bool (const SqlRow*)>& cb, string*) const override {
+    bool ForEachRow(string*, const function<bool (const SqlRow*)>& cb) const override {
         int nr_record = PQntuples(m_result);
         for (int cur_row = 0; cur_row < nr_record; ++cur_row) {
             PgsqlRow row(m_result, cur_row);
@@ -109,6 +109,7 @@ bool PgsqlClient::Open(const string& host, uint16_t port,
         if (errmsg) {
             *errmsg = PQerrorMessage(m_conn);
         }
+        Close();
         return false;
     }
 

@@ -63,7 +63,7 @@ public:
         return &m_meta;
     }
 
-    bool ForEachRow(const function<bool (const SqlRow*)>& cb, string*) const override {
+    bool ForEachRow(string*, const function<bool (const SqlRow*)>& cb) const override {
         MYSQL_ROW row;
         while ((row = mysql_fetch_row(m_result))) {
             unsigned long* length = mysql_fetch_lengths(m_result);
@@ -105,6 +105,7 @@ bool MysqlClient::Open(const string& host, uint16_t port,
         if (errmsg) {
             *errmsg = mysql_error(m_conn);
         }
+        Close();
         return false;
     }
 

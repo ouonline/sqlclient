@@ -72,8 +72,7 @@ public:
         return &m_meta;
     }
 
-    bool ForEachRow(const function<bool (const SqlRow*)>& cb,
-                    string* errmsg = nullptr) const override {
+    bool ForEachRow(string* errmsg, const function<bool (const SqlRow*)>& cb) const override {
         int rc;
         const SqliteRow row(m_stmt);
         while (true) {
@@ -122,8 +121,7 @@ bool SqliteClient::Open(const string& fname, string* errmsg) {
         if (errmsg) {
             *errmsg = sqlite3_errmsg(m_db);
         }
-        sqlite3_close(m_db);
-        m_db = nullptr;
+        Close();
         return false;
     }
     return true;
