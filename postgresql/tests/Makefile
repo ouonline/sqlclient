@@ -28,7 +28,7 @@ test_pgsql_OBJS := omake_dep_0.test_pgsql_client.cpp.o
 test_pgsql_LIBS := ../libpgsql_client_static.a -lpq
 
 test_pgsql: $(test_pgsql_OBJS) | omake_phony_0
-	$(CXX) $(CXXFLAGS) -Wextra -Werror -Wall -o $@ $^ $(test_pgsql_LIBS)
+	$(CXX) $(CXXFLAGS) -Wall -Werror -Wextra -o $@ $^ $(test_pgsql_LIBS)
 
 clean:
 	rm -f $(TARGET) $(test_pgsql_OBJS)

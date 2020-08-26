@@ -28,7 +28,7 @@ test_mysql_OBJS := omake_dep_0.test_mysql_client.cpp.o
 test_mysql_LIBS := ../libmysql_client_static.a -lmysqlclient
 
 test_mysql: $(test_mysql_OBJS) | omake_phony_0
-	$(CXX) $(CXXFLAGS) -Wextra -Werror -Wall -o $@ $^ $(test_mysql_LIBS)
+	$(CXX) $(CXXFLAGS) -Wall -Werror -Wextra -o $@ $^ $(test_mysql_LIBS)
 
 clean:
 	rm -f $(TARGET) $(test_mysql_OBJS)

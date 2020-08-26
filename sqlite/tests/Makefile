@@ -25,10 +25,10 @@ omake_dep_0.test_sqlite_client.cpp.o: test_sqlite_client.cpp
 
 test_sqlite3_OBJS := omake_dep_0.test_sqlite_client.cpp.o
 
-test_sqlite3_LIBS := ../libsqlite_client_static.a ../../../../../sqlite3/libsqlite3.a -ldl -lpthread
+test_sqlite3_LIBS := ../libsqlite_client_static.a ../../../../../sqlite3/libsqlite3.a -lpthread -ldl
 
 test_sqlite3: $(test_sqlite3_OBJS) | omake_phony_0
-	$(CXX) $(CXXFLAGS) -Wextra -Werror -Wall -o $@ $^ $(test_sqlite3_LIBS)
+	$(CXX) $(CXXFLAGS) -Wall -Werror -Wextra -o $@ $^ $(test_sqlite3_LIBS)
 
 clean:
 	rm -f $(TARGET) $(test_sqlite3_OBJS)
