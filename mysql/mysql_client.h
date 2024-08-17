@@ -4,28 +4,28 @@
 #include "../sqlclient.h"
 #include <mysql/mysql.h>
 
-namespace outils {
+namespace sqlclient {
 
 class MysqlClient final : public SqlClient {
 public:
-    MysqlClient();
-    ~MysqlClient();
-    bool Open(const std::string& host, uint16_t port,
-              const std::string& user, const std::string& password,
-              const std::string& db = "", std::string* errmsg = nullptr);
+    MysqlClient() : m_conn(nullptr) {}
+    ~MysqlClient() {
+        Close();
+    }
+
+    bool Open(const char* host, uint16_t port, const char* user, const char* password,
+              const char* db = nullptr, std::string* errmsg = nullptr);
     void Close();
-    bool Execute(const std::string& sqlstr, std::string* errmsg = nullptr,
-                 const std::function<void (const SqlResult*)>& cb = nullptr) override;
+    std::unique_ptr<SqlResult> Execute(const char* sqlstr, uint32_t len,
+                                       std::string* errmsg = nullptr) override;
 
 private:
     MYSQL* m_conn;
 
-public:
-    MysqlClient(MysqlClient&&) = default;
-    MysqlClient& operator=(MysqlClient&&) = default;
-
 private:
+    MysqlClient(MysqlClient&&) = delete;
     MysqlClient(const MysqlClient&) = delete;
+    MysqlClient& operator=(MysqlClient&&) = delete;
     MysqlClient& operator=(const MysqlClient&) = delete;
 };
 

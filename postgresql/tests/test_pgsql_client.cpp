@@ -1,63 +1,43 @@
 #include "../pgsql_client.h"
 #include <iostream>
 using namespace std;
-using namespace outils;
+using namespace sqlclient;
+
+#undef NDEBUG
+#include <assert.h>
 
 int main(void) {
     string errmsg;
     PgsqlClient client;
-    if (!client.Open("127.0.0.1", 5432, "postgres", "postgres", "postgres",
-                     &errmsg)) {
-        cerr << "open file failed: " << errmsg << endl;
-        return -1;
-    }
+    assert(client.Open("127.0.0.1", 5432, "postgres", "postgres", "postgres"));
 
-    if (!client.Execute("create table if not exists abc_007 (id bigint primary key);",
-                        &errmsg))  {
-        cerr << "create table failed: " << errmsg << endl;
-        return -1;
-    }
+    string sqlstr = "create table if not exists abc_007 (id bigint primary key);";
+    auto res = client.Execute(sqlstr.data(), sqlstr.size(), &errmsg);
+    assert(!res && errmsg.empty());
 
-    cout << "create table ok" << endl;
+    sqlstr = "insert into abc_007 values (1), (2), (3), (4), (5)";
+    res = client.Execute(sqlstr.data(), sqlstr.size(), &errmsg);
+    assert(!res && errmsg.empty());
 
-    if (!client.Execute("insert into abc_007 values (1), (2), (3), (4), (5)", &errmsg)) {
-        cerr << "insert data failed: " << errmsg << endl;
-    } else {
-        cout << "insert test data ok" << endl;
-    }
+    sqlstr = "select * from abc_007";
+    res = client.Execute(sqlstr.data(), sqlstr.size(), &errmsg);
+    assert(res);
 
-    bool ok = client.Execute("select * from abc_007", &errmsg);
-    if (!ok)  {
-        cerr << "query table failed: " << errmsg << endl;
-    } else {
-        cout << "select data ok" << endl;
-    }
+    auto meta = res->GetColumnMeta();
+    assert(meta->GetColumnCount() == 1);
 
-    ok = client.Execute("select * from abc_007", &errmsg, [] (const SqlResult* res) {
-        string errmsg;
-        auto meta = res->GetColumnMeta();
-        bool ok = res->ForEachRow(&errmsg, [&meta] (const SqlRow* row) -> bool {
-            uint64_t id;
-            row->Get(0, &id);
-            cout << "get [" << meta->GetColumnName(0) << "] -> " << id << endl;
-            return true;
-        });
-        if (!ok) {
-            cerr << "visit result failed: " << errmsg << endl;
-        }
-    });
-    if (!ok)  {
-        cerr << "select data with result failed: " << errmsg << endl;
-    } else {
-        cout << "select data ok" << endl;
+    uint32_t counter = 0;
+    const SqlRowRef* row;
+    while ((row = res->GetNextRow())) {
+        uint64_t id;
+        row->Get(0, (int64_t*)(&id));
+        cout << "get [" << meta->GetColumnName(0) << "] -> " << id << endl;
+        ++counter;
     }
+    assert(counter == 5);
 
-    ok = client.Execute("drop table abc_007", &errmsg);
-    if (!ok) {
-        cerr << "drop table failed: " << errmsg << endl;
-    } else {
-        cerr << "drop table ok" << endl;
-    }
+    sqlstr = "drop table abc_007";
+    assert(client.Execute(sqlstr.data(), sqlstr.size(), &errmsg));
 
     return 0;
 }

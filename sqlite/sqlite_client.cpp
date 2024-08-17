@@ -1,23 +1,19 @@
 #include "sqlite_client.h"
-#include <iostream>
 using namespace std;
 
-namespace outils {
+namespace sqlclient {
 
-class SqliteRow final : public SqlRow {
+class SqliteRow final : public SqlRowRef {
 public:
     SqliteRow(sqlite3_stmt* stmt) : m_stmt(stmt) {}
     void Get(uint32_t col, int32_t* res) const override {
         *res = sqlite3_column_int(m_stmt, col);
     }
-    void Get(uint32_t col, uint32_t* res) const override {
-        *res = sqlite3_column_int(m_stmt, col);
-    }
     void Get(uint32_t col, int64_t* res) const override {
         *res = sqlite3_column_int64(m_stmt, col);
     }
-    void Get(uint32_t col, uint64_t* res) const override {
-        *res = sqlite3_column_int64(m_stmt, col);
+    void Get(uint32_t col, float* res) const override {
+        *res = sqlite3_column_double(m_stmt, col);
     }
     void Get(uint32_t col, double* res) const override {
         *res = sqlite3_column_double(m_stmt, col);
@@ -31,8 +27,10 @@ private:
     sqlite3_stmt* m_stmt;
 
 private:
-    SqliteRow(const SqliteRow&);
-    SqliteRow& operator=(const SqliteRow&);
+    SqliteRow(const SqliteRow&) = delete;
+    SqliteRow(SqliteRow&&) = delete;
+    SqliteRow& operator=(const SqliteRow&) = delete;
+    SqliteRow& operator=(SqliteRow&&) = delete;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -43,24 +41,26 @@ public:
     uint32_t GetColumnCount() const override {
         return sqlite3_column_count(m_stmt);
     }
-    const char* GetColumnName(uint32_t i) const override {
-        return sqlite3_column_name(m_stmt, i);
+    const char* GetColumnName(uint32_t idx) const override {
+        return sqlite3_column_name(m_stmt, idx);
     }
 
 private:
     sqlite3_stmt* m_stmt;
 
 private:
-    SqliteColumnMeta(const SqliteColumnMeta&);
-    SqliteColumnMeta& operator=(const SqliteColumnMeta&);
+    SqliteColumnMeta(const SqliteColumnMeta&) = delete;
+    SqliteColumnMeta(SqliteColumnMeta&&) = delete;
+    SqliteColumnMeta& operator=(const SqliteColumnMeta&) = delete;
+    SqliteColumnMeta& operator=(SqliteColumnMeta&&) = delete;
 };
 
 /* -------------------------------------------------------------------------- */
 
 class SqliteResult final : public SqlResult {
 public:
-    SqliteResult(sqlite3* db, sqlite3_stmt* stmt)
-        : m_db(db), m_stmt(stmt), m_meta(stmt) {}
+    SqliteResult(sqlite3_stmt* stmt)
+        : m_is_first_row(true), m_stmt(stmt), m_row(stmt), m_meta(stmt) {}
 
     ~SqliteResult() {
         if (m_stmt) {
@@ -72,58 +72,42 @@ public:
         return &m_meta;
     }
 
-    bool ForEachRow(string* errmsg, const function<bool (const SqlRow*)>& cb) const override {
-        int rc;
-        const SqliteRow row(m_stmt);
-        while (true) {
-            if (!cb(&row)) {
-                return true;
-            }
-
-            rc = sqlite3_step(m_stmt);
-            if (rc != SQLITE_ROW) {
-                break;
-            }
+    const SqlRowRef* GetNextRow() const override {
+        if (m_is_first_row) {
+            m_is_first_row = false;
+            return &m_row;
         }
 
-        if (rc != SQLITE_DONE) {
-            if (errmsg) {
-                *errmsg = sqlite3_errmsg(m_db);
-            }
-            return false;
+        int rc = sqlite3_step(m_stmt);
+        if (rc == SQLITE_ROW) {
+            return &m_row;
         }
 
-        return true;
+        // TODO signal error if rc != SQLITE_DONE
+        return nullptr;
     }
 
 private:
-    sqlite3* m_db;
+    mutable bool m_is_first_row;
     sqlite3_stmt* m_stmt;
+    const SqliteRow m_row;
     const SqliteColumnMeta m_meta;
 
 private:
-    SqliteResult(const SqliteResult&);
-    SqliteResult& operator=(const SqliteResult&);
+    SqliteResult(const SqliteResult&) = delete;
+    SqliteResult& operator=(const SqliteResult&) = delete;
 };
 
 /* -------------------------------------------------------------------------- */
 
-SqliteClient::SqliteClient()
-    : m_db(nullptr) {}
-
-SqliteClient::~SqliteClient() {
-    Close();
-}
-
-bool SqliteClient::Open(const string& fname, string* errmsg) {
-    int rc = sqlite3_open(fname.c_str(), &m_db);
-    if (rc != SQLITE_OK) {
+bool SqliteClient::Open(const char* fname, string* errmsg) {
+    if (sqlite3_open(fname, &m_db) != SQLITE_OK) {
         if (errmsg) {
             *errmsg = sqlite3_errmsg(m_db);
+            return false;
         }
-        Close();
-        return false;
     }
+
     return true;
 }
 
@@ -134,37 +118,34 @@ void SqliteClient::Close() {
     }
 }
 
-bool SqliteClient::Execute(const string& sqlstr, string* errmsg,
-                           const std::function<void (const SqlResult*)>& cb) {
+unique_ptr<SqlResult> SqliteClient::Execute(const char* sqlstr, uint32_t len, string* errmsg) {
     sqlite3_stmt* stmt = nullptr;
-    int rc = sqlite3_prepare_v2(m_db, sqlstr.data(), sqlstr.size(),
-                                &stmt, nullptr);
-    const SqliteResult res(m_db, stmt);
+    int rc = sqlite3_prepare_v2(m_db, sqlstr, len, &stmt, nullptr);
 
+    unique_ptr<SqlResult> res = make_unique<SqliteResult>(stmt); // res will handle `stmt`
     if (rc != SQLITE_OK) {
         if (errmsg) {
             *errmsg = sqlite3_errmsg(m_db);
         }
-        return false;
+        return unique_ptr<SqlResult>();
     }
 
     rc = sqlite3_step(stmt);
     if (rc == SQLITE_DONE) {
-        return true;
+        if (errmsg) {
+            errmsg->clear();
+        }
+        return unique_ptr<SqlResult>();
     }
 
     if (rc != SQLITE_ROW) {
         if (errmsg) {
             *errmsg = sqlite3_errmsg(m_db);
         }
-        return false;
+        return unique_ptr<SqlResult>();
     }
 
-    if (cb) {
-        cb(&res);
-    }
-
-    return true;
+    return res;
 }
 
 }
