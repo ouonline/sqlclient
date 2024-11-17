@@ -2,7 +2,7 @@
 #define __SQLITE_SQLITE_CLIENT_H__
 
 #include "../sqlclient.h"
-#include <sqlite3.h>
+#include "sqlite3.h"
 
 namespace sqlclient {
 

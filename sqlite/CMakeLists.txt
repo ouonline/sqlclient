@@ -7,6 +7,13 @@ option(SQLITECLIENT_BUILD_TESTS "build tests" ON)
 option(SQLITECLIENT_INSTALL "install headers and libs" ON)
 option(SQLITECLIENT_HOLD_DEPS "do not update existing deps" OFF)
 
+if(NOT SQLITECLIENT_DEP_SQLITE_INCS)
+    message(FATAL_ERROR "`SQLITECLIENT_DEP_SQLITE_INCS` is not set.")
+endif()
+if(NOT SQLITECLIENT_DEP_SQLITE_LIBS)
+    message(FATAL_ERROR "`SQLITECLIENT_DEP_SQLITE_LIBS` is not set.")
+endif()
+
 if(NOT CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 14)
 endif()
@@ -34,8 +41,10 @@ file(GLOB_RECURSE __SQLITECLIENT_SRC__ ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 add_library(sqliteclient_static STATIC ${__SQLITECLIENT_SRC__})
 unset(__SQLITECLIENT_SRC__)
 
-target_include_directories(sqliteclient_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries(sqliteclient_static PUBLIC sqlite3)
+target_include_directories(sqliteclient_static PUBLIC
+    ${SQLITECLIENT_DEP_SQLITE_INCS}
+    ${CMAKE_CURRENT_LIST_DIR})
+target_link_libraries(sqliteclient_static PUBLIC ${SQLITECLIENT_DEP_SQLITE_LIBS})
 
 if(MSVC)
     target_compile_options(sqliteclient_static PRIVATE /W4)

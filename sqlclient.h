@@ -15,6 +15,13 @@ public:
     virtual void Get(uint32_t col, float* res) const = 0;
     virtual void Get(uint32_t col, double* res) const = 0;
     virtual void Get(uint32_t col, const char** base, uint32_t* len) const = 0;
+
+    void Get(uint32_t col, std::string* res) const {
+        const char* base = nullptr;
+        uint32_t len = 0;
+        Get(col, &base, &len);
+        res->assign(base, len);
+    }
 };
 
 class SqlColumnMeta {

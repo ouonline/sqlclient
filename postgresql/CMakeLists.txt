@@ -34,7 +34,7 @@ file(GLOB_RECURSE __PGSQLCLIENT_SRC__ ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 add_library(pgsqlclient_static STATIC ${__PGSQLCLIENT_SRC__})
 unset(__PGSQLCLIENT_SRC__)
 
-target_include_directories(pgsqlclient_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(pgsqlclient_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(pgsqlclient_static PUBLIC pq)
 
 if(MSVC)

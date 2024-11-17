@@ -34,7 +34,7 @@ file(GLOB_RECURSE __MYSQLCLIENT_SRC__ ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 add_library(mysqlclient_static STATIC ${__MYSQLCLIENT_SRC__})
 unset(__MYSQLCLIENT_SRC__)
 
-target_include_directories(mysqlclient_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(mysqlclient_static PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(mysqlclient_static PUBLIC mysqlclient)
 
 if(MSVC)
