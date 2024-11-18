@@ -24,7 +24,7 @@ int main(void) {
     res = client.Execute(sqlstr.data(), sqlstr.size(), &errmsg);
     assert(res);
 
-    auto meta = res->GetColumnMeta();
+    auto meta = res->GetColumnInfo();
     assert(meta->GetColumnCount() == 1);
 
     uint32_t counter = 0;
@@ -32,7 +32,7 @@ int main(void) {
     while ((row = res->GetNextRow())) {
         uint64_t id;
         row->Get(0, (int64_t*)(&id));
-        cout << "get [" << meta->GetColumnName(0) << "] -> " << id << endl;
+        cout << "get [" << meta->GetName(0) << "] -> " << id << endl;
         ++counter;
     }
     assert(counter == 5);

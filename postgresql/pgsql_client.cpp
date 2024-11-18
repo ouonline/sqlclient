@@ -41,13 +41,13 @@ private:
 
 /* -------------------------------------------------------------------------- */
 
-class PgsqlColumnMeta final : public SqlColumnMeta {
+class PgsqlColumnMeta final : public SqlColumnInfo {
 public:
     PgsqlColumnMeta(PGresult* result) : m_result(result) {}
     uint32_t GetColumnCount() const override {
         return PQnfields(m_result);
     }
-    const char* GetColumnName(uint32_t idx) const override {
+    const char* GetName(uint32_t idx) const override {
         return PQfname(m_result, idx);
     }
 
@@ -73,7 +73,7 @@ public:
         }
     }
 
-    const SqlColumnMeta* GetColumnMeta() const override {
+    const SqlColumnInfo* GetColumnInfo() const override {
         return &m_meta;
     }
 

@@ -24,17 +24,17 @@ public:
     }
 };
 
-class SqlColumnMeta {
+class SqlColumnInfo {
 public:
-    virtual ~SqlColumnMeta() {}
+    virtual ~SqlColumnInfo() {}
     virtual uint32_t GetColumnCount() const = 0;
-    virtual const char* GetColumnName(uint32_t idx) const = 0;
+    virtual const char* GetName(uint32_t idx) const = 0;
 };
 
 class SqlResult {
 public:
     virtual ~SqlResult() {}
-    virtual const SqlColumnMeta* GetColumnMeta() const = 0;
+    virtual const SqlColumnInfo* GetColumnInfo() const = 0;
     virtual const SqlRowRef* GetNextRow() const = 0;
 };
 

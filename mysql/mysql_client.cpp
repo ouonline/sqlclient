@@ -40,7 +40,7 @@ private:
 
 /* -------------------------------------------------------------------------- */
 
-class MysqlColumnMeta final : public SqlColumnMeta {
+class MysqlColumnMeta final : public SqlColumnInfo {
 public:
     MysqlColumnMeta(MYSQL_RES* result) {
         m_field_num = mysql_num_fields(result);
@@ -49,7 +49,7 @@ public:
     uint32_t GetColumnCount() const override {
         return m_field_num;
     }
-    const char* GetColumnName(uint32_t idx) const override {
+    const char* GetName(uint32_t idx) const override {
         return m_field_list[idx].name;
     }
 
@@ -73,7 +73,7 @@ public:
         mysql_free_result(m_result);
     }
 
-    const SqlColumnMeta* GetColumnMeta() const override {
+    const SqlColumnInfo* GetColumnInfo() const override {
         return &m_meta;
     }
 

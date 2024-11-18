@@ -35,13 +35,13 @@ private:
 
 /* -------------------------------------------------------------------------- */
 
-class SqliteColumnMeta final : public SqlColumnMeta {
+class SqliteColumnMeta final : public SqlColumnInfo {
 public:
     SqliteColumnMeta(sqlite3_stmt* stmt) : m_stmt(stmt) {}
     uint32_t GetColumnCount() const override {
         return sqlite3_column_count(m_stmt);
     }
-    const char* GetColumnName(uint32_t idx) const override {
+    const char* GetName(uint32_t idx) const override {
         return sqlite3_column_name(m_stmt, idx);
     }
 
@@ -68,7 +68,7 @@ public:
         }
     }
 
-    const SqlColumnMeta* GetColumnMeta() const override {
+    const SqlColumnInfo* GetColumnInfo() const override {
         return &m_meta;
     }
 
