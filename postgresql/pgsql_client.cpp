@@ -77,7 +77,7 @@ public:
         return &m_meta;
     }
 
-    SqlRowRef* GetNextRow() const override {
+    const SqlRowRef* GetNextRow() const override {
         if (m_counter == PQntuples(m_result)) {
             return nullptr;
         }

@@ -77,7 +77,7 @@ public:
         return &m_meta;
     }
 
-    SqlRowRef* GetNextRow() const override {
+    const SqlRowRef* GetNextRow() const override {
         MYSQL_ROW row = mysql_fetch_row(m_result);
         if (row) {
             unsigned long* length = mysql_fetch_lengths(m_result);
